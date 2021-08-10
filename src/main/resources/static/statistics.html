@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>statistics - URL shortener service</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+<body>
+<script id="mp_template" type="text/template">
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>No. of hits</th>
+      <th>Referrer</th>
+      <th>User</th>
+      <th>shortened URL</th>
+      <th>Delete</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {{#eachkeys data}}
+      <tr>
+        <td>{{this.value.count}}</td>
+        <td><a href="{{this.value.url.url}}">{{this.value.url.url}}</a></td>
+        <td>{{this.value.url.user}}</td>
+        <td><a href="/s/{{this.value.url.id}}">http://localhost:8080/s/{{this.value.url.id}}</a></td>
+        <td><a href="/service/delete/{{this.value.url.user}}/{{this.value.url.id}}">delete</a></td>
+      </tr>
+    {{/eachkeys}}
+    </tbody>
+  </table>
+</script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-2"> </div>
+    <div class="col-8">
+      <h2>Statistics</h2>
+      <div id="avg-listing"> </div>
+    </div>
+    <div>
+      <a class="btn btn-info" href="index.html">home</a>
+    </div>
+    <div class="col-2"> </div>
+  </div>
+</div>
+
+<script src="js/jquery-3.6.0.min.js" ></script>
+<script src="js/bootstrap.bundle.min.js" ></script>
+<script src="js/handlebars.js"></script>
+<script src="js/app.js" ></script>
+
+<script>
+  Handlebars.registerHelper('eachkeys', function(context, options) {
+    const fn = options.fn, inverse = options.inverse;
+    let ret = "";
+
+    let empty = true;
+    for (key in context) { empty = false; break; }
+
+    if (!empty) {
+      for (key in context) {
+        ret = ret + fn({ 'key': key, 'value': context[key]});
+      }
+    } else {
+      ret = inverse(this);
+    }
+    return ret;
+  });
+</script>
+<script>
+  $.get("/service/stats")
+      .done(function( data ) {
+        const source = $("#mp_template").html();
+        const template = Handlebars.compile(source);
+        console.log(data['urlCounts']);
+        $('#avg-listing').html(template({'data': data['urlCounts']}));
+      });
+</script>
+
+</body>
+</html>
